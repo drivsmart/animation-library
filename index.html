@@ -83,7 +83,7 @@
                 el.classList.add('animation');
                 bodymovin.loadAnimation({
                     container: el,
-                    path: `/animations/${filename}`,
+                    path: `animations/${filename}`,
                     renderer: 'svg',
                     loop: true
                 });
@@ -96,7 +96,7 @@
                 el.classList.add('file-info');
                 el.textContent = 'Loading…';
 
-                fetch(`/animations/${filename}`, { method: 'HEAD' })
+                fetch(`animations/${filename}`, { method: 'HEAD' })
                     .then(response => {
                         if (!response.ok) {
                             throw `HTTP status ${response.status}`;
