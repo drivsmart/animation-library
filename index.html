@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Animation library</title>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.5.3/lottie_svg.min.js'></script>
+
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            h1 {
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                font-size: 48px;
+                font-weight: normal;
+                margin-bottom: 48px;
+            }
+
+            #animations-wrapper {
+                width: 90%;
+                max-width: 640px;
+            }
+
+            .animation-wrapper {
+                margin-bottom: 48px;
+            }
+
+            .animation {
+                margin-bottom: 32px;
+            }
+
+            .file-info {
+                padding: 8px;
+                background: #eee;
+                font-family: 'Monaco', 'Courier', monospace;
+                font-size: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Animation library</h1>
+
+        <div id='animations-wrapper'>
+            <p>Loading…</p>
+        </div>
+
+        <script>
+            const filenames = [
+                'bank-and-accounting.json',
+                'card-big-picture.json',
+                'card-everyday-life.json',
+                'card-relevant.json',
+                'days-sales-outstanding.json',
+                'error-icon.json',
+                'onboarding-big-picture.json',
+                'onboarding-everyday-life.json',
+                'onboarding-relevant.json',
+                'waiting-for-data.json',
+            ];
+
+            const animations = filenames.map(renderAnimation);
+            const wrapper = document.querySelector('#animations-wrapper');
+            animations.forEach(animation => wrapper.appendChild(animation));
+            wrapper.removeChild(wrapper.querySelector('p'));
+
+            function renderAnimation(filename) {
+                const el = document.createElement('div');
+                el.classList.add('animation-wrapper');
+                const animation = animationElement(filename);
+                const fileInfo = fileInfoElement(filename);
+                el.appendChild(animation);
+                el.appendChild(fileInfo);
+
+                return el;
+            }
+
+            function animationElement(filename) {
+                const el = document.createElement('div');
+                el.classList.add('animation');
+                bodymovin.loadAnimation({
+                    container: el,
+                    path: `/animations/${filename}`,
+                    renderer: 'svg',
+                    loop: true
+                });
+
+                return el;
+            }
+
+            function fileInfoElement(filename) {
+                const el = document.createElement('pre');
+                el.classList.add('file-info');
+                el.textContent = 'Loading…';
+
+                fetch(`/animations/${filename}`, { method: 'HEAD' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw `HTTP status ${response.status}`;
+                        }
+                        el.textContent = infoText(filename, response.headers);
+                    })
+                    .catch(err => {
+                        const msg = `Error occurred for ${filename}\n${err}`;
+                        el.textContent = msg;
+                    });
+
+                return el;
+            }
+
+            function infoText(filename, headers) {
+                const encoding = headers.has('Content-Encoding')
+                    ? headers.get('Content-Encoding')
+                    : 'unknown';
+                const bytes = headers.has('Content-Length')
+                    ? headers.get('Content-Length')
+                    : 'unknown';
+                const kB = bytes === 'unknown'
+                    ? bytes
+                    : (Number.parseFloat(bytes) / 1000).toFixed(1);
+
+                return `Filename: ${filename}\nSize: ${kB} kB\nEncoding: ${encoding}`;
+            }
+        </script>
+    </body>
+</html>
